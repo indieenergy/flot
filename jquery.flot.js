@@ -483,6 +483,10 @@
                     if (show)
                         s.lines.show = true;
                 }
+                
+                if (s.series_id == null) {
+                  s.series_id = i + '';
+                }
 
                 // setup axes
                 s.xaxis = getOrCreateAxis(xaxes, axisNumber(s, "x"));
@@ -2247,8 +2251,8 @@
                     label = lf(label, s);
                 
                 fragments.push(
-                    '<td class="legendColorBox"><div style="border:1px solid ' + options.legend.labelBoxBorderColor + ';padding:1px"><div style="width:4px;height:0;border:5px solid ' + s.color + ';overflow:hidden"></div></div></td>' +
-                    '<td class="legendLabel">' + label + '</td>');
+                    '<td series_id="' + s.series_id + '" class="legendColorBox"><div style="border:1px solid ' + options.legend.labelBoxBorderColor + ';padding:1px"><div style="width:4px;height:0;border:5px solid ' + s.color + ';overflow:hidden"></div></div></td>' +
+                    '<td series_id="' + s.series_id + '" class="legendLabel">' + label + '</td>');
             }
             if (rowStarted)
                 fragments.push('</tr>');
