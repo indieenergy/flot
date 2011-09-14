@@ -631,53 +631,60 @@
             // second pass: find datamax/datamin for auto-scaling
             for (i = 0; i < series.length; ++i) {
                 s = series[i];
-                points = s.datapoints.points,
-                ps = s.datapoints.pointsize;
-                format = s.datapoints.format;
-
-                var xmin = topSentry, ymin = topSentry,
-                    xmax = bottomSentry, ymax = bottomSentry;
                 
-                for (j = 0; j < points.length; j += ps) {
-                    if (points[j] == null)
-                        continue;
+                if (s.visible || s.visible == undefined) {
+                    points = s.datapoints.points,
+                    ps = s.datapoints.pointsize;
+                    format = s.datapoints.format;
 
-                    for (m = 0; m < ps; ++m) {
-                        val = points[j + m];
-                        f = format[m];
-                        if (!f || val == fakeInfinity || val == -fakeInfinity)
+                    var xmin = topSentry, ymin = topSentry,
+                        xmax = bottomSentry, ymax = bottomSentry;
+
+                    for (j = 0; j < points.length; j += ps) {
+                        if (points[j] == null)
                             continue;
-                        
-                        if (f.x) {
-                            if (val < xmin)
-                                xmin = val;
-                            if (val > xmax)
-                                xmax = val;
+
+                        for (m = 0; m < ps; ++m) {
+                            val = points[j + m];
+                            f = format[m];
+                            if (!f || val == fakeInfinity || val == -fakeInfinity)
+                                continue;
+
+                            if (f.x) {
+                                if (val < xmin)
+                                    xmin = val;
+                                if (val > xmax)
+                                    xmax = val;
+                            }
+                            if (f.y) {
+                                if (val < ymin)
+                                    ymin = val;
+                                if (val > ymax)
+                                    ymax = val;
+                            }
                         }
-                        if (f.y) {
-                            if (val < ymin)
-                                ymin = val;
-                            if (val > ymax)
-                                ymax = val;
+                    }
+
+                    if (s.bars.show) {
+                        //store barLeft to prevent recalculation allowing overwrite in procDatapoints hook.
+                        if (s.bars.barLeft == undefined)
+                            s.bars.barLeft= s.bars.align == "left" ? bar_offset : bar_offset-bars_total_width/2;
+                        bar_offset += s.bars.barWidth;
+                        // make sure we got room for the bar on the dancing floor
+                        var delta = s.bars.barLeft;
+                        if (s.bars.horizontal) {
+                            ymin += delta;
+                            ymax += delta + s.bars.barWidth;
+                        }
+                        else {
+                            xmin += delta;
+                            xmax += delta + s.bars.barWidth;
                         }
                     }
+
+                    updateAxis(s.xaxis, xmin, xmax);
+                    updateAxis(s.yaxis, ymin, ymax);
                 }
-                
-                if (s.bars.show) {
-                    // make sure we got room for the bar on the dancing floor
-                    var delta = s.bars.align == "left" ? 0 : -s.bars.barWidth/2;
-                    if (s.bars.horizontal) {
-                        ymin += delta;
-                        ymax += delta + s.bars.barWidth;
-                    }
-                    else {
-                        xmin += delta;
-                        xmax += delta + s.bars.barWidth;
-                    }
-                }
-                
-                updateAxis(s.xaxis, xmin, xmax);
-                updateAxis(s.yaxis, ymin, ymax);
             }
 
             $.each(allAxes(), function (_, axis) {
